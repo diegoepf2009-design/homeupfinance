@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Home Up Finance | Premium</title>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* ==============================
+           1. VARIÁVEIS E TEMA AZUL DEGRADÊ
+        ============================== */
+        :root {
+            --bg-app: linear-gradient(135deg, #020617 0%, #0f172a 40%, #1e3a8a 100%);
+            --bg-sidebar: rgba(15, 23, 42, 0.95);
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.15);
+            
+            --accent-blue: #3b82f6;
+            --accent-blue-light: #60a5fa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            
+            --radius-xl: 20px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            
+            --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-family); }
+        body { background: var(--bg-app); background-attachment: fixed; color: var(--text-primary); overflow: hidden; }
+
+        /* ==============================
+           2. LAYOUT E RESPONSIVIDADE
+        ============================== */
+        .app-container { display: flex; height: 100vh; overflow: hidden; position: relative; }
+        
+        .sidebar { 
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; padding: 20px 0; z-index: 50; backdrop-filter: blur(12px);
+            transition: transform 0.3s ease;
+        }
+        
+        .brand { padding: 0 24px 32px 24px; display: flex; align-items: center; gap: 12px; color: var(--text-primary); font-size: 1.1rem; font-weight: 600;}
+        .brand .material-icons-round { color: var(--accent-blue-light); font-size: 28px;}
+        
+        .menu { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; flex: 1; overflow-y: auto;}
+        .menu::-webkit-scrollbar { width: 4px; }
+        .menu::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        
+        .menu-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-decoration: none; color: var(--text-secondary); border-radius: var(--radius-md); transition: all 0.2s ease; cursor: pointer; font-size: 0.95rem; font-weight: 500;}
+        .menu-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+        .menu-item.active { background: var(--accent-blue); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
+        
+        .sidebar-health { margin: 24px 16px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 1px solid var(--border-color); text-align: center; }
+        .sidebar-health .icon-smile { font-size: 48px; margin-bottom: 12px; transition: color 0.3s;}
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; position: relative;}
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 32px; background: transparent; }
+        .topbar-left { display: flex; align-items: center; gap: 16px; }
+        
+        #btn-menu-toggle { display: none; background: transparent; border: none; color: white; cursor: pointer; padding: 4px; }
+        #btn-menu-toggle .material-icons-round { font-size: 28px; }
+
+        .month-selector { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 6px 16px; border-radius: 100px; border: 1px solid var(--border-color); font-size: 0.9rem; backdrop-filter: blur(10px);}
+        .month-selector button { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s;}
+        .month-selector button:hover { color: var(--text-primary); }
+        
+        .topbar-actions { display: flex; align-items: center; gap: 20px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; background: var(--bg-card); padding: 6px 16px 6px 6px; border-radius: 100px; border: 1px solid var(--border-color); backdrop-filter: blur(10px);}
+        .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--accent-blue); }
+        
+        .view-container { padding: 0 32px 40px 32px; animation: fadeIn 0.4s ease; max-width: 1600px; margin: 0 auto; width: 100%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==============================
+           3. COMPONENTES VISUAIS E FORMS
+        ============================== */
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;}
+        
+        .cards-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .cc-card { 
+            border-radius: var(--radius-xl); padding: 20px; color: white; 
+            display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;
+            box-shadow: var(--shadow-card); cursor: pointer; transition: transform 0.2s; min-height: 170px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .cc-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5); }
+        .cc-header { display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; position: relative;}
+        .cc-brand { font-size: 1.5rem; font-weight: bold; letter-spacing: -1px; line-height: 1;}
+        .cc-chip { width: 32px; height: 24px; background: rgba(255,255,255,0.3); border-radius: 4px; margin-top: 12px; position: relative;}
+        .cc-body { z-index: 2; position: relative; margin-top: 10px;}
+        .cc-name { font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px;}
+        .cc-value { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px;}
+        .cc-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; z-index: 2; position: relative;}
+        .cc-bg-shape { position: absolute; right: -20%; bottom: -20%; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;}
+
+        .panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; backdrop-filter: blur(16px); box-shadow: var(--shadow-card);}
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .kpi-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; justify-content: center;}
+        
+        .charts-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
+        .chart-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; backdrop-filter: blur(16px); min-height: 320px;}
+        /* Correção do Chart Container para não vazar */
+        .chart-container { flex: 1; position: relative; width: 100%; height: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center;}
+        
+        .split-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px;}
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;}
+        label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;}
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: var(--text-primary); outline: none; transition: border 0.2s;}
+        input:focus, select:focus { border-color: var(--accent-blue); background: rgba(0,0,0,0.5);}
+        .btn-primary { background: var(--accent-blue); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; width: 100%; text-shadow: 0 1px 2px rgba(0,0,0,0.3);}
+        .btn-primary:hover { background: var(--accent-blue-light); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);}
+        
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; background: rgba(0,0,0,0.2);}
+        .badge { font-size: 0.75em; font-weight: normal; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; margin-left: 8px; color: var(--text-secondary);}
+
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent-blue); border-radius: 3px; }
+
+        .car-hero { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: var(--radius-lg); padding: 32px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: var(--shadow-card);}
+        
+        /* OVERLAY PARA MOBILE */
+        #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(2px); }
+
+        /* ==============================
+           4. MOBILE RESPONSIVE
+        ============================== */
+        @media (max-width: 900px) {
+            .split-layout { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .charts-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            #btn-menu-toggle { display: block; }
+            .sidebar { position: fixed; left: -280px; height: 100%; box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
+            .sidebar.open { transform: translateX(280px); }
+            #sidebar-overlay.active { display: block; }
+            .topbar { padding: 16px; }
+            .view-container { padding: 0 16px 40px 16px; }
+            .month-selector span:first-child { display: none; } /* Oculta icone de calendário no mobile p/ dar espaço */
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Overlay Mobile -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="brand">
+                <span class="material-icons-round">analytics</span>
+                <span>Home Up Premium</span>
+            </div>
+            <nav class="menu">
+                <div data-view="dashboard" class="menu-item active"><span class="material-icons-round">dashboard</span> Dashboard</div>
+                <div data-view="receitas" class="menu-item"><span class="material-icons-round">add_box</span> Receitas</div>
+                <div data-view="cartoes" class="menu-item"><span class="material-icons-round">credit_card</span> Cartões</div>
+                <div data-view="despesas" class="menu-item"><span class="material-icons-round">account_balance_wallet</span> Despesas Gerais</div>
+                <div data-view="carro" class="menu-item"><span class="material-icons-round">directions_car</span> Meu Carro</div>
+                <div data-view="dizimo" class="menu-item"><span class="material-icons-round">star</span> Dízimo</div>
+                <div data-view="calendario" class="menu-item"><span class="material-icons-round">calendar_month</span> Calendário</div>
+                <div data-view="config" class="menu-item"><span class="material-icons-round">settings</span> Configurações</div>
+            </nav>
+            
+            <div class="sidebar-health" id="sidebar-health-container">
+                <!-- Injetado dinamicamente -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button id="btn-menu-toggle"><span class="material-icons-round">menu</span></button>
+                    <div class="month-selector">
+                        <span class="material-icons-round" style="color: var(--accent-blue)">event</span>
+                        <span style="color: var(--text-secondary); margin-right: 4px;" class="hide-mobile">Competência:</span>
+                        <button id="prevMonth"><span class="material-icons-round">chevron_left</span></button>
+                        <span id="currentMonthLabel" style="font-weight: 600; min-width: 60px; text-align: center; color: #fff;">07/2026</span>
+                        <button id="nextMonth"><span class="material-icons-round">chevron_right</span></button>
+                    </div>
+                </div>
+                
+                <div class="topbar-actions">
+                    <div class="user-profile">
+                        <img src="https://ui-avatars.com/api/?name=Diego&background=3b82f6&color=fff" alt="Diego">
+                        <span style="font-weight: 600; padding-right: 8px;" class="hide-mobile">Diego</span>
+                    </div>
+                </div>
+            </header>
+            
+            <div id="view-container" class="view-container">
+                <!-- Conteúdo Injetado -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* ======================================================================
+           1. DB E UTILITÁRIOS
+        ====================================================================== */
+        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+        const generateUUID = () => crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });
+
+        const DB_NAME = 'FinanceDB'; const DB_VERSION = 5; // Version 5 para forçar novas categorias e carro
+        const STORES = ['months', 'cards', 'categories', 'transactions'];
+
+        const initDB = () => new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                STORES.forEach(s => {
+                    if (!db.objectStoreNames.contains(s)) {
+                        const store = db.createObjectStore(s, { keyPath: 'id' });
+                        if(s === 'transactions') store.createIndex('monthId', 'monthId', { unique: false });
+                    }
+                });
+            };
+            request.onsuccess = (e) => resolve(e.target.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
+
+        const addRecord = async (store, data) => new Promise(async (res, rej) => { const db = await initDB(); const r = db.transaction(store, 'readwrite').objectStore(store).put(data); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+        const getAll = async (store) => new Promise(async (res, rej) => { const db = await initDB(); const r = db.transaction(store, 'readonly').objectStore(store).getAll(); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+        const getRecord = async (store, id) => new Promise(async (res, rej) => { const db = await initDB(); const r = db.transaction(store, 'readonly').objectStore(store).get(id); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+        const getByMonth = async (monthId) => new Promise(async (res, rej) => { const db = await initDB(); const r = db.transaction('transactions', 'readonly').objectStore('transactions').index('monthId').getAll(monthId); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+        const deleteRecord = async (store, id) => new Promise(async (res, rej) => { const db = await initDB(); const r = db.transaction(store, 'readwrite').objectStore(store).delete(id); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+
+        // Mês LocalStorage
+        const getCurrentMonthId = () => localStorage.getItem('currentMonthId') || '2026-07';
+        const setCurrentMonthId = (monthId) => localStorage.setItem('currentMonthId', monthId);
+        const getMonthLabel = (monthId) => { const [y, m] = monthId.split('-'); return `${m.padStart(2,'0')}/${y}`; };
+
+        const initializeSystemDefaults = async () => {
+            const db = await initDB();
+            const tx = db.transaction(['months', 'cards', 'categories'], 'readwrite');
+            
+            const mStore = tx.objectStore('months');
+            mStore.get('2026-07').onsuccess = (e) => { if (!e.target.result) mStore.put({ id: '2026-07', label: '07/2026', status: 'open' }); };
+
+            const cStore = tx.objectStore('cards');
+            const defaultCards = [
+                { id: 'nubank-diego', name: 'Nubank Diego', color: 'linear-gradient(135deg, #8A05BE 0%, #a824e3 100%)', brand: 'nu', dueDay: 10 },
+                { id: 'nubank-rithele', name: 'Nubank Rithele', color: 'linear-gradient(135deg, #8A05BE 0%, #a824e3 100%)', brand: 'nu', dueDay: 10 },
+                { id: 'bv-diego', name: 'BV Diego', color: 'linear-gradient(135deg, #7dd3fc 0%, #0ea5e9 100%)', brand: 'BV', dueDay: 15 },
+                { id: 'inter-diego', name: 'Inter Diego', color: 'linear-gradient(135deg, #FF7A00 0%, #ff9d40 100%)', brand: 'inter', dueDay: 20 },
+                { id: 'ml-diego', name: 'Mercado Livre Diego', color: 'linear-gradient(135deg, #FFE600 0%, #ffbb00 100%)', textColor: '#333', brand: 'mercado livre', dueDay: 5 }
+            ];
+            defaultCards.forEach(c => { cStore.get(c.id).onsuccess = (e) => { if (!e.target.result) cStore.put(c); }; });
+
+            const catStore = tx.objectStore('categories');
+            const defaultCats = [
+                { id: 'cat-supermercado', name: '🛒 Supermercado', type: 'expense', isSystem: false },
+                { id: 'cat-farmacia', name: '💊 Farmácia e Saúde', type: 'expense', isSystem: false },
+                { id: 'cat-carro', name: '🚗 Carro e Combustível', type: 'expense', isSystem: false },
+                { id: 'cat-moradia', name: '🏠 Moradia', type: 'expense', isSystem: false },
+                { id: 'cat-dizimo', name: '🙏 Dízimo e Ofertas', type: 'expense', isSystem: true }, 
+                { id: 'cat-negocio', name: '💼 Meu Negócio', type: 'expense', isSystem: false },
+                { id: 'cat-alimentacao', name: '🍔 Alimentação', type: 'expense', isSystem: false },
+                { id: 'cat-educacao', name: '🎓 Educação', type: 'expense', isSystem: false },
+                { id: 'cat-lazer', name: '🎉 Lazer', type: 'expense', isSystem: false },
+                { id: 'cat-outros', name: '📦 Outros', type: 'expense', isSystem: false },
+                { id: 'cat-salario', name: '💰 Salário', type: 'income', isSystem: false },
+                { id: 'cat-outras-receitas', name: '💰 Outras Receitas', type: 'income', isSystem: false }
+            ];
+            defaultCats.forEach(c => { catStore.get(c.id).onsuccess = (e) => { if (!e.target.result) catStore.put(c); }; });
+        };
+
+        const updateHealthSidebar = (balance, commitPct, recTotal) => {
+            const healthEl = document.getElementById('sidebar-health-container');
+            if(!healthEl) return;
+            
+            let icon, color, title, desc;
+            if (recTotal === 0) {
+                icon = 'sentiment_neutral'; color = 'var(--text-secondary)'; title = 'Aguardando'; desc = 'Cadastre receitas para análise.';
+            } else if (balance < 0) {
+                icon = 'sentiment_dissatisfied'; color = 'var(--danger)'; title = 'Alerta Crítico!'; desc = 'Despesas superam receitas. Revise gastos.';
+            } else if (commitPct > 80) {
+                icon = 'sentiment_neutral'; color = 'var(--warning)'; title = 'Atenção'; desc = 'Renda muito comprometida. Evite novas dívidas.';
+            } else {
+                icon = 'sentiment_very_satisfied'; color = 'var(--success)'; title = 'Excelente!'; desc = 'Sua saúde financeira está em dia.';
+            }
+            
+            healthEl.innerHTML = `
+                <div class="material-icons-round icon-smile" style="color: ${color};">${icon}</div>
+                <div style="color: ${color}; font-weight: 600; font-size: 1.1rem; margin-bottom: 4px;">${title}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">${desc}</div>
+            `;
+        };
+
+        /* ======================================================================
+           2. RENDERIZAÇÃO DAS VIEWS E EDIÇÃO
+        ====================================================================== */
+        let globalCharts = [];
+        const clearCharts = () => { globalCharts.forEach(c => c.destroy()); globalCharts = []; };
+
+        // ------------------ DASHBOARD ------------------
+        const renderDashboard = async (container, monthId) => {
+            clearCharts();
+            const txs = await getByMonth(monthId);
+            const cards = await getAll('cards');
+            const cats = await getAll('categories');
+            
+            let recPropria = 0, recTerc = 0;
+            let desPropria = 0, desTerc = 0;
+            let byCat = {};
+            let parcelamentos = [];
+            
+            // Loop para popular cards com zero inicialmente
+            let totalsByCard = {};
+            cards.forEach(c => totalsByCard[c.id] = 0);
+            
+            txs.forEach(t => {
+                if (t.type === 'income') {
+                    if (t.ownership === 'terceiro') recTerc += t.amount;
+                    else recPropria += t.amount;
+                } else if (t.type === 'expense') {
+                    if (t.ownership === 'terceiro') desTerc += t.amount;
+                    else desPropria += t.amount;
+                    
+                    byCat[t.categoryId] = (byCat[t.categoryId] || 0) + t.amount;
+                    if(t.cardId && totalsByCard[t.cardId] !== undefined) totalsByCard[t.cardId] += t.amount;
+                    
+                    if (t.frequency === 'installment' && t.installmentData) {
+                        parcelamentos.push(t);
+                    }
+                }
+            });
+            
+            const recTotal = recPropria + recTerc;
+            const desTotal = desPropria + desTerc;
+            const balProprio = recPropria - desPropria;
+            const balTotal = recTotal - desTotal;
+            const commitPct = recPropria > 0 ? (desPropria / recPropria) * 100 : 0;
+            
+            updateHealthSidebar(balTotal, commitPct, recTotal);
+
+            // Setup Gráfico Pizza
+            const sortedCats = Object.keys(byCat).map(id => ({id, val: byCat[id]})).sort((a,b) => b.val - a.val);
+            let chartLabels = [], chartData = [];
+            let othersVal = 0;
+            sortedCats.forEach((c, idx) => {
+                if(idx < 5) {
+                    const catObj = cats.find(cat => cat.id === c.id);
+                    chartLabels.push(catObj ? (catObj.name.split(' ').slice(1).join(' ') || catObj.name) : 'Desconhecida');
+                    chartData.push(c.val);
+                } else {
+                    othersVal += c.val;
+                }
+            });
+            if(othersVal > 0) { chartLabels.push('Demais'); chartData.push(othersVal); }
+            if(chartData.length === 0) { chartLabels = ['Sem Despesas']; chartData = [1]; }
+
+            container.innerHTML = `
+                <!-- Cards dos Cartões -->
+                <div class="section-title">Meus Cartões</div>
+                <div class="cards-wrapper">
+                    ${cards.map(c => `
+                        <div class="cc-card" style="background: ${c.color}; color: ${c.textColor || '#fff'}" onclick="appRenderCard('${c.id}')">
+                            <div class="cc-bg-shape"></div>
+                            <div class="cc-header"><span class="cc-brand">${c.brand || c.name.split(' ')[0]}</span></div>
+                            <div class="cc-body">
+                                <div class="cc-name">${c.name}</div>
+                                <div class="cc-value">${formatCurrency(totalsByCard[c.id])}</div>
+                            </div>
+                            <div class="cc-footer"><span>Vencimento dia ${c.dueDay || '--'}</span> <span class="material-icons-round" style="font-size:16px;">arrow_forward</span></div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Resumo Analítico -->
+                <div class="panel" style="margin-bottom: 24px;">
+                    <div class="section-title">Análise Consolidada do Mês</div>
+                    <div class="kpi-grid">
+                        <div class="kpi-card" style="border-left: 4px solid var(--success);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Receitas Próprias</span><strong style="color:var(--success)">${formatCurrency(recPropria)}</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;"><span>Receitas Terceiros</span><strong style="color:#60a5fa">${formatCurrency(recTerc)}</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-top:8px;"><span>Total Receitas</span><strong style="font-size:1.2rem">${formatCurrency(recTotal)}</strong></div>
+                        </div>
+                        <div class="kpi-card" style="border-left: 4px solid var(--danger);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Despesas Próprias</span><strong style="color:var(--danger)">${formatCurrency(desPropria)}</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;"><span>Despesas Terceiros</span><strong style="color:#f87171">${formatCurrency(desTerc)}</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-top:8px;"><span>Total Despesas</span><strong style="font-size:1.2rem">${formatCurrency(desTotal)}</strong></div>
+                        </div>
+                        <div class="kpi-card" style="border-left: 4px solid var(--accent-blue);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Saldo Próprio</span><strong style="color:${balProprio >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(balProprio)}</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-top:16px; align-items:center;"><span>Saldo Geral</span><strong style="font-size:1.5rem; color:${balTotal >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(balTotal)}</strong></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed ${balTotal < 0 ? 'var(--danger)' : 'var(--success)'}; display:flex; gap:12px; align-items:center;">
+                        <span class="material-icons-round" style="color: ${balTotal < 0 ? 'var(--danger)' : (commitPct > 80 ? 'var(--warning)' : 'var(--success)')}">lightbulb</span>
+                        <div style="font-size:0.9rem; color:var(--text-primary)">
+                            ${recTotal === 0 ? 'Cadastre suas receitas para habilitar as sugestões financeiras.' : 
+                              (balTotal < 0 ? '<strong style="color:var(--danger)">Ação Recomendada:</strong> Congele gastos imediatamente e revise faturas de cartão. Suas despesas superam a receita total.' : 
+                              (commitPct > 80 ? '<strong style="color:var(--warning)">Ação Recomendada:</strong> Sua renda própria está altamente comprometida ('+commitPct.toFixed(1)+'% usada). Evite novos parcelamentos.' : 
+                              '<strong style="color:var(--success)">Ação Recomendada:</strong> Seu orçamento está sob controle ('+commitPct.toFixed(1)+'% de uso). Considere transferir o saldo excedente para sua reserva de investimentos.'))}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-panel">
+                        <div class="section-title">Distribuição de Gastos</div>
+                        <div class="chart-container"><canvas id="chCategory"></canvas></div>
+                    </div>
+                    
+                    <div class="panel" style="display:flex; flex-direction:column; max-height:400px; overflow-y:auto; padding:20px;">
+                        <div class="section-title">Progresso de Parcelamentos</div>
+                        ${parcelamentos.length === 0 ? '<p style="color:var(--text-secondary); text-align:center; margin-top:20px;">Nenhum parcelamento ativo.</p>' : 
+                          parcelamentos.map(p => {
+                              let pct = (p.installmentData.current / p.installmentData.total) * 100;
+                              let valTotal = p.amount * p.installmentData.total;
+                              let valPago = p.amount * p.installmentData.current;
+                              return `
+                              <div style="margin-bottom: 16px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                      <strong>${p.description} <span class="badge" style="background:var(--accent-blue); color:white; border:none;">${p.installmentData.current}/${p.installmentData.total}</span></strong>
+                                      <span>${formatCurrency(p.amount)}/mês</span>
+                                  </div>
+                                  <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary); margin-bottom:4px;">
+                                      <span>Pago: ${formatCurrency(valPago)}</span>
+                                      <span>Falta: ${formatCurrency(valTotal - valPago)}</span>
+                                  </div>
+                                  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%; background:${pct === 100 ? 'var(--success)' : 'var(--accent-blue)'}"></div></div>
+                              </div>
+                              `;
+                          }).join('')}
+                    </div>
+                </div>
+            `;
+
+            Chart.defaults.color = '#94a3b8';
+            globalCharts.push(new Chart(document.getElementById('chCategory'), {
+                type: 'doughnut', 
+                data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#64748b'], borderWidth: 0 }] }, 
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { color: '#f8fafc', font: {size: 11} } } } }
+            }));
+        };
+
+        // ------------------ RECEITAS ------------------
+        const renderReceitas = async (container, monthId) => {
+            const txs = (await getByMonth(monthId)).filter(t => t.type === 'income');
+            const cats = (await getAll('categories')).filter(c => c.type === 'income');
+            container.innerHTML = `
+                <div class="section-title">Gestão de Receitas</div>
+                <div class="split-layout">
+                    <div class="panel">
+                        <form id="frmRec">
+                            <input type="hidden" id="r-edit-id">
+                            <div class="form-group"><label>Nome / Origem</label><input type="text" id="r-nome" required></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Valor (R$)</label><input type="number" step="0.01" id="r-valor" required></div>
+                                <div class="form-group"><label>Data</label><input type="date" id="r-data" required></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Categoria</label><select id="r-cat" required>${cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+                                <div class="form-group"><label>Propriedade</label><select id="r-prop"><option value="propria">Própria</option><option value="terceiro">De Terceiros</option></select></div>
+                            </div>
+                            <div class="form-group"><label>Frequência</label><select id="r-freq"><option value="once">Variável (Única)</option><option value="fixed">Fixa Mensal</option><option value="installment">Parcelada</option></select></div>
+                            <div id="r-box-parc" class="form-row" style="display:none; background: rgba(0,0,0,0.3); padding:16px; border-radius:8px; border: 1px dashed var(--accent-blue);">
+                                <div class="form-group" style="margin:0"><label>Parcela Atual</label><input type="number" id="r-p-atual" value="1"></div>
+                                <div class="form-group" style="margin:0"><label>Total Parcelas</label><input type="number" id="r-p-total" value="2"></div>
+                            </div>
+                            <button class="btn-primary" type="submit" id="r-btn-submit">Adicionar Receita</button>
+                        </form>
+                    </div>
+                    <div class="panel">
+                        <h3 style="margin-bottom: 16px;">Entradas Registradas</h3>
+                        ${txs.length ? txs.map(t => `<div class="list-item" style="border-left: 4px solid var(--success)">
+                            <div>
+                                <strong>${t.description}</strong>
+                                <span class="badge">${t.frequency==='installment' ? `${t.installmentData.current}/${t.installmentData.total}` : (t.frequency==='fixed'?'Fixa':'Única')}</span>
+                                ${t.ownership === 'terceiro' ? '<span class="badge" style="color:#60a5fa; border-color:#60a5fa">Terceiros</span>' : ''}
+                                <br><small>Data: ${t.date || '--'}</small>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <strong style="color:var(--success); margin-right:12px;">${formatCurrency(t.amount)}</strong>
+                                <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--accent-blue); color:var(--accent-blue)" onclick="editViewTx('${t.id}', 'receitas')"><span class="material-icons-round" style="font-size:16px;">edit</span></button>
+                                <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--danger); color:var(--danger)" onclick="delTx('${t.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
+                            </div>
+                        </div>`).join('') : '<p style="color:var(--text-secondary)">Nenhuma receita lançada.</p>'}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('r-freq').addEventListener('change', (e) => { document.getElementById('r-box-parc').style.display = e.target.value === 'installment' ? 'grid' : 'none'; });
+            
+            document.getElementById('frmRec').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                let freq = document.getElementById('r-freq').value;
+                let instData = freq === 'installment' ? { current: parseInt(document.getElementById('r-p-atual').value), total: parseInt(document.getElementById('r-p-total').value), parentId: generateUUID() } : null;
+                const editId = document.getElementById('r-edit-id').value;
+                const txData = { id: editId || generateUUID(), monthId, type: 'income', categoryId: document.getElementById('r-cat').value, description: document.getElementById('r-nome').value, amount: parseFloat(document.getElementById('r-valor').value), date: document.getElementById('r-data').value, frequency: freq, installmentData: instData, ownership: document.getElementById('r-prop').value, status: 'paid' };
+                await addRecord('transactions', txData);
+                refreshCurrentView();
+            });
+        };
+
+        // ------------------ CARTÕES & FATURAS ------------------
+        const renderCartoes = async (container, monthId, cardId = null) => {
+            const cards = await getAll('cards');
+            if(!cardId) {
+                const txs = await getByMonth(monthId);
+                let totals = {}; cards.forEach(c => totals[c.id] = 0);
+                txs.forEach(t => { if(t.cardId) totals[t.cardId] += t.amount; });
+                container.innerHTML = `
+                    <div class="section-title">Gerenciar Faturas e Lançamentos</div>
+                    <div class="cards-wrapper">
+                        ${cards.map(c => `
+                            <div class="cc-card" style="background: ${c.color}; color:${c.textColor||'#fff'}" onclick="appRenderCard('${c.id}')">
+                                <div class="cc-bg-shape"></div>
+                                <div class="cc-header"><span class="cc-brand">${c.brand || c.name.split(' ')[0]}</span></div>
+                                <div class="cc-body"><div class="cc-name">${c.name}</div><div class="cc-value">${formatCurrency(totals[c.id])}</div></div>
+                                <div class="cc-footer"><span>Vencimento dia ${c.dueDay || '--'}</span></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                const card = cards.find(c => c.id === cardId);
+                const cats = (await getAll('categories')).filter(c => c.type === 'expense');
+                const ctxs = (await getByMonth(monthId)).filter(t => t.cardId === cardId);
+                
+                container.innerHTML = `
+                    <div class="section-title" style="cursor:pointer;" onclick="appRenderCard(null)"><span class="material-icons-round" style="margin-right:8px; vertical-align:middle;">arrow_back</span> Fatura: ${card.name} (Vence dia ${card.dueDay || '--'})</div>
+                    <div class="split-layout">
+                        <div class="panel">
+                            <form id="frmFat">
+                                <input type="hidden" id="f-edit-id">
+                                <div class="form-group"><label>Estabelecimento / Descrição</label><input type="text" id="f-nome" required></div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Valor Total (R$)</label><input type="number" step="0.01" id="f-valor" required></div>
+                                    <div class="form-group"><label>Data da Compra</label><input type="date" id="f-data" required></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Categoria</label><select id="f-cat" required>${cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+                                    <div class="form-group"><label>Propriedade</label><select id="f-prop"><option value="propria">Própria</option><option value="terceiro">De Terceiros</option></select></div>
+                                </div>
+                                <div class="form-group"><label>Tipo de Compra</label><select id="f-freq"><option value="once">À Vista</option><option value="installment">Parcelado</option></select></div>
+                                
+                                <div id="f-box-parc" class="form-row" style="display:none; background: rgba(0,0,0,0.3); padding:16px; border-radius:8px; border: 1px dashed var(--accent-blue);">
+                                    <div class="form-group" style="margin:0"><label>Parcela Atual</label><input type="number" id="f-p-atual" value="1" min="1"></div>
+                                    <div class="form-group" style="margin:0"><label>Total Parcelas</label><input type="number" id="f-p-total" value="2" min="2"></div>
+                                </div>
+                                
+                                <button class="btn-primary" id="f-btn-submit" style="margin-top:16px; background:${card.color.includes('gradient') ? card.color.split(',')[1].trim().split(' ')[0] : card.color}" type="submit">Lançar no Cartão</button>
+                            </form>
+                        </div>
+                        <div class="panel">
+                            <h3 style="margin-bottom: 16px;">Detalhes da Fatura</h3>
+                            ${ctxs.length ? ctxs.map(t => `<div class="list-item" style="border-left: 4px solid ${t.ownership === 'terceiro' ? '#f87171' : 'var(--accent-blue-light)'}">
+                                <div>
+                                    <strong>${t.description}</strong>
+                                    <span class="badge">${t.frequency==='installment'?`${t.installmentData.current}/${t.installmentData.total}`:'À Vista'}</span>
+                                    ${t.ownership === 'terceiro' ? '<span class="badge" style="color:#f87171; border-color:#f87171">Terceiro</span>' : ''}
+                                    <br><small>Compra: ${t.date || '--'}</small>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <strong style="margin-right:12px;">${formatCurrency(t.amount)}</strong>
+                                    <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--accent-blue); color:var(--accent-blue)" onclick="editViewTx('${t.id}', 'cartoes')"><span class="material-icons-round" style="font-size:16px;">edit</span></button>
+                                    <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--danger); color:var(--danger)" onclick="delTx('${t.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
+                                </div>
+                            </div>`).join('') : '<p style="color:var(--text-secondary)">Sem lançamentos.</p>'}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('f-freq').addEventListener('change', (e) => { document.getElementById('f-box-parc').style.display = e.target.value === 'installment' ? 'grid' : 'none'; });
+                document.getElementById('frmFat').addEventListener('submit', async(e) => {
+                    e.preventDefault();
+                    let freq = document.getElementById('f-freq').value;
+                    let instData = freq === 'installment' ? { current: parseInt(document.getElementById('f-p-atual').value), total: parseInt(document.getElementById('f-p-total').value), parentId: generateUUID() } : null;
+                    const editId = document.getElementById('f-edit-id').value;
+                    await addRecord('transactions', { id: editId || generateUUID(), monthId, type: 'expense', categoryId: document.getElementById('f-cat').value, description: document.getElementById('f-nome').value, amount: parseFloat(document.getElementById('f-valor').value), date: document.getElementById('f-data').value, frequency: freq, installmentData: instData, cardId: card.id, ownership: document.getElementById('f-prop').value, status: 'pending' });
+                    appRenderCard(card.id);
+                });
+            }
+        };
+
+        // ------------------ DESPESAS GERAIS ------------------
+        const renderDespesas = async (container, monthId) => {
+            const txs = (await getByMonth(monthId)).filter(t => t.type === 'expense' && !t.cardId);
+            const cats = (await getAll('categories')).filter(c => c.type === 'expense');
+            container.innerHTML = `
+                <div class="section-title">Nova Despesa Geral (Boletos/Contas Fixas)</div>
+                <div class="split-layout">
+                    <div class="panel">
+                        <form id="frmDes">
+                            <input type="hidden" id="d-edit-id">
+                            <div class="form-group"><label>Nome da Conta</label><input type="text" id="d-nome" required></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Valor (R$)</label><input type="number" step="0.01" id="d-valor" required></div>
+                                <div class="form-group"><label>Vencimento / Pagamento</label><input type="date" id="d-data" required></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Categoria</label><select id="d-cat">${cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+                                <div class="form-group"><label>Propriedade</label><select id="d-prop"><option value="propria">Própria</option><option value="terceiro">De Terceiros</option></select></div>
+                            </div>
+                            <div class="form-group"><label>Tipo de Recorrência</label><select id="d-freq"><option value="once">Conta Única</option><option value="fixed">Conta Fixa Mensal</option><option value="installment">Empréstimo/Financiamento (Parcelado)</option></select></div>
+                            <div id="box-parc" class="form-row" style="display:none; background: rgba(0,0,0,0.3); padding:16px; border-radius:8px; border: 1px dashed var(--accent-blue);">
+                                <div class="form-group" style="margin:0"><label>Parcela Atual</label><input type="number" id="d-p-atual" value="1"></div>
+                                <div class="form-group" style="margin:0"><label>Total Parcelas</label><input type="number" id="d-p-total" value="2"></div>
+                            </div>
+                            <button class="btn-primary" type="submit" id="d-btn-submit" style="margin-top:16px;">Salvar Despesa</button>
+                        </form>
+                    </div>
+                    <div class="panel">
+                        <h3 style="margin-bottom: 16px;">Contas e Boletos do Mês</h3>
+                        ${txs.length ? txs.map(t => `<div class="list-item" style="border-left: 4px solid var(--danger)">
+                            <div>
+                                <strong>${t.description}</strong>
+                                <span class="badge">${t.frequency==='installment'?`${t.installmentData.current}/${t.installmentData.total}`:(t.frequency==='fixed'?'Fixa':'Única')}</span>
+                                ${t.ownership === 'terceiro' ? '<span class="badge" style="color:#f87171; border-color:#f87171">Terceiro</span>' : ''}
+                                <br><small><strong>Vencimento:</strong> ${t.date || '--'}</small>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <strong style="color:var(--danger); margin-right:12px;">${formatCurrency(t.amount)}</strong>
+                                <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--accent-blue); color:var(--accent-blue)" onclick="editViewTx('${t.id}', 'despesas')"><span class="material-icons-round" style="font-size:16px;">edit</span></button>
+                                <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--danger); color:var(--danger)" onclick="delTx('${t.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
+                            </div>
+                        </div>`).join('') : '<p style="color:var(--text-secondary)">Nenhuma conta geral lançada.</p>'}
+                    </div>
+                </div>
+            `;
+            document.getElementById('d-freq').addEventListener('change', (e) => { document.getElementById('box-parc').style.display = e.target.value === 'installment' ? 'grid' : 'none'; });
+            document.getElementById('frmDes').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                let freq = document.getElementById('d-freq').value;
+                let instData = freq === 'installment' ? { current: parseInt(document.getElementById('d-p-atual').value), total: parseInt(document.getElementById('d-p-total').value), parentId: generateUUID() } : null;
+                const editId = document.getElementById('d-edit-id').value;
+                await addRecord('transactions', { id: editId || generateUUID(), monthId, type: 'expense', categoryId: document.getElementById('d-cat').value, description: document.getElementById('d-nome').value, amount: parseFloat(document.getElementById('d-valor').value), date: document.getElementById('d-data').value, frequency: freq, ownership: document.getElementById('d-prop').value, installmentData: instData, cardId: null, status: 'pending' });
+                refreshCurrentView();
+            });
+        };
+
+        // Função Global de Edição para Transações
+        window.editViewTx = async (id, context) => {
+            const t = await getRecord('transactions', id);
+            if(!t) return;
+            
+            if(context === 'receitas') {
+                document.getElementById('r-edit-id').value = t.id;
+                document.getElementById('r-nome').value = t.description;
+                document.getElementById('r-valor').value = t.amount;
+                document.getElementById('r-data').value = t.date || '';
+                document.getElementById('r-cat').value = t.categoryId;
+                document.getElementById('r-prop').value = t.ownership || 'propria';
+                document.getElementById('r-freq').value = t.frequency;
+                if(t.frequency === 'installment' && t.installmentData) {
+                    document.getElementById('r-box-parc').style.display = 'grid';
+                    document.getElementById('r-p-atual').value = t.installmentData.current;
+                    document.getElementById('r-p-total').value = t.installmentData.total;
+                } else { document.getElementById('r-box-parc').style.display = 'none'; }
+                document.getElementById('r-btn-submit').innerText = "Atualizar Receita";
+            } 
+            else if(context === 'despesas') {
+                document.getElementById('d-edit-id').value = t.id;
+                document.getElementById('d-nome').value = t.description;
+                document.getElementById('d-valor').value = t.amount;
+                document.getElementById('d-data').value = t.date || '';
+                document.getElementById('d-cat').value = t.categoryId;
+                document.getElementById('d-prop').value = t.ownership || 'propria';
+                document.getElementById('d-freq').value = t.frequency;
+                if(t.frequency === 'installment' && t.installmentData) {
+                    document.getElementById('box-parc').style.display = 'grid';
+                    document.getElementById('d-p-atual').value = t.installmentData.current;
+                    document.getElementById('d-p-total').value = t.installmentData.total;
+                } else { document.getElementById('box-parc').style.display = 'none'; }
+                document.getElementById('d-btn-submit').innerText = "Atualizar Despesa";
+            }
+            else if(context === 'cartoes') {
+                document.getElementById('f-edit-id').value = t.id;
+                document.getElementById('f-nome').value = t.description;
+                document.getElementById('f-valor').value = t.amount;
+                document.getElementById('f-data').value = t.date || '';
+                document.getElementById('f-cat').value = t.categoryId;
+                document.getElementById('f-prop').value = t.ownership || 'propria';
+                document.getElementById('f-freq').value = t.frequency;
+                if(t.frequency === 'installment' && t.installmentData) {
+                    document.getElementById('f-box-parc').style.display = 'grid';
+                    document.getElementById('f-p-atual').value = t.installmentData.current;
+                    document.getElementById('f-p-total').value = t.installmentData.total;
+                } else { document.getElementById('f-box-parc').style.display = 'none'; }
+                document.getElementById('f-btn-submit').innerText = "Atualizar Lançamento";
+            }
+            window.scrollTo(0,0);
+        };
+
+        // ------------------ MEU CARRO (ATUALIZADO) ------------------
+        const renderCarro = async (container, monthId) => {
+            const txs = await getByMonth(monthId);
+            const cats = await getAll('categories');
+            const cards = await getAll('cards');
+            
+            const catCarro = cats.find(c => c.name.includes('Carro') || c.name.includes('Transporte')) || {id: 'cat-carro'};
+            const carroTxs = txs.filter(t => t.categoryId === catCarro.id);
+            const totalCarro = carroTxs.reduce((a,b) => a + b.amount, 0);
+
+            // Busca ou cria dados do financiamento no localStorage
+            let financingData = JSON.parse(localStorage.getItem('carFinancingData')) || {
+                modelo: 'HB20S Azul 2023',
+                totalFinanciado: 50000,
+                parcelasTotais: 48,
+                parcelasPagas: 12,
+                valorQuitacaoAtual: 42000
+            };
+
+            container.innerHTML = `
+                <div class="section-title">Gestão do Veículo</div>
+                <div class="car-hero">
+                    <div style="z-index: 2; position: relative;">
+                        <h1 style="font-size:2.5rem; margin-bottom:8px;">${financingData.modelo}</h1>
+                        <p style="opacity:0.9; font-size:1.1rem; margin-bottom:24px;">Gastos com Transporte, Combustível e Manutenção.</p>
+                        <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                            <div style="background:rgba(0,0,0,0.3); padding:16px 24px; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
+                                <span style="font-size:0.9rem; opacity:0.8;">Custo Total Consolidado</span>
+                                <h2 style="font-size:2rem; margin-top:4px;">${formatCurrency(totalCarro)}</h2>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:16px 24px; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
+                                <span style="font-size:0.9rem; opacity:0.8;">Saldo Devedor</span>
+                                <h2 style="font-size:2rem; margin-top:4px;">${formatCurrency(financingData.totalFinanciado - (financingData.totalFinanciado / financingData.parcelasTotais * financingData.parcelasPagas))}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <svg style="width: 180px; height: auto; z-index: 2; position: relative; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));" viewBox="0 0 512 300" xmlns="http://www.w3.org/2000/svg">
+                        <g fill="#1e40af"><path d="M455.5 130c-20-12-65-30-100-40-50-14-110-20-150-10-50 12-85 40-105 60-15 15-25 35-25 55v45h35c10 0 15-10 20-25 15-40 65-45 85-15 10 15 15 25 25 25h140c10 0 15-10 25-25 20-30 70-25 85 15 5 15 10 25 20 25h45v-40c0-20-10-50-25-70zm-270-30c40-10 90-10 120 0 25 10 40 25 45 40h-210c5-15 20-30 45-40z"/></g>
+                        <g fill="#334155"><circle cx="160" cy="240" r="40"/><circle cx="390" cy="240" r="40"/></g>
+                        <g fill="#94a3b8"><circle cx="160" cy="240" r="20"/><circle cx="390" cy="240" r="20"/></g>
+                    </svg>
+                </div>
+                
+                <div class="split-layout">
+                    <div class="panel">
+                        <h3 style="margin-bottom:16px;">📊 Financiamento</h3>
+                        <form id="frmCarroFin">
+                            <div class="form-group"><label>Modelo do Veículo</label><input type="text" id="car-modelo" value="${financingData.modelo}" required></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Total Financiado (R$)</label><input type="number" step="0.01" id="car-total-fin" value="${financingData.totalFinanciado}" required></div>
+                                <div class="form-group"><label>Total de Parcelas</label><input type="number" id="car-parc-total" value="${financingData.parcelasTotais}" required></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Parcelas Pagas</label><input type="number" id="car-parc-pagas" value="${financingData.parcelasPagas}" required></div>
+                                <div class="form-group"><label>Valor para Quitar Hoje (R$)</label><input type="number" step="0.01" id="car-quitacao" value="${financingData.valorQuitacaoAtual}" required></div>
+                            </div>
+                            <button class="btn-primary" type="submit" style="margin-top:8px;">Atualizar Dados</button>
+                        </form>
+                    </div>
+                    <div class="panel">
+                        <h3 style="margin-bottom:16px;">📈 Análise do Financiamento</h3>
+                        ${(() => {
+                            const totalFin = financingData.totalFinanciado;
+                            const parcelasTotais = financingData.parcelasTotais;
+                            const parcelasPagas = financingData.parcelasPagas;
+                            const valorParcela = totalFin / parcelasTotais;
+                            const totalPago = valorParcela * parcelasPagas;
+                            const saldoRestante = totalFin - totalPago;
+                            const parcelasRestantes = parcelasTotais - parcelasPagas;
+                            const valorQuitacao = financingData.valorQuitacaoAtual;
+                            const economia = saldoRestante - valorQuitacao;
+
+                            return `
+                                <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin-bottom:16px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                        <span>💰 Parcela Mensal</span>
+                                        <strong>${formatCurrency(valorParcela)}</strong>
+                                    </div>
+                                </div>
+                                <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin-bottom:16px;">
+                                    <p style="margin-bottom:8px;">
+                                        <span style="color:var(--success);">✅ Você já pagou <strong>${parcelasPagas}</strong> parcelas</span><br>
+                                        <span style="color:var(--text-secondary);">Total pago: ${formatCurrency(totalPago)}</span>
+                                    </p>
+                                    <p>
+                                        <span style="color:var(--warning);">⏳ Ainda restam <strong>${parcelasRestantes}</strong> parcelas</span><br>
+                                        <span style="color:var(--text-secondary);">Saldo a pagar: ${formatCurrency(saldoRestante)}</span>
+                                    </p>
+                                </div>
+                                <div style="background:rgba(16,185,129,0.15); border:1px solid var(--success); border-radius:12px; padding:16px;">
+                                    <p style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                        <span class="material-icons-round" style="color:var(--success);">lightbulb</span>
+                                        <span><strong>Se você quitasse o veículo hoje:</strong></span>
+                                    </p>
+                                    <p style="font-size:1.2rem; color:${economia > 0 ? 'var(--success)' : 'var(--danger)'};">
+                                        Economizaria <strong>${formatCurrency(economia)}</strong>
+                                        ${economia > 0 ? '🎉' : '⚠️ (Cuidado, a quitação pode não ser vantajosa)'}
+                                    </p>
+                                </div>
+                            `;
+                        })()}
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3 style="margin-bottom: 16px;">Lançamentos Analíticos</h3>
+                    ${carroTxs.length ? carroTxs.map(t => {
+                        let cName = cards.find(c => c.id === t.cardId)?.name || 'Despesa Geral / Dinheiro';
+                        return `<div class="list-item" style="border-left: 4px solid var(--accent-blue-light)">
+                            <div><strong>${t.description}</strong><br><small>Pgto: ${cName} • Data: ${t.date || '--'}</small></div>
+                            <strong style="font-size:1.1rem;">${formatCurrency(t.amount)}</strong>
+                        </div>`
+                    }).join('') : '<p style="color:var(--text-secondary)">Nenhum lançamento categorizado como "Carro e Combustível" este mês.</p>'}
+                </div>
+            `;
+            
+            document.getElementById('frmCarroFin').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newData = {
+                    modelo: document.getElementById('car-modelo').value,
+                    totalFinanciado: parseFloat(document.getElementById('car-total-fin').value),
+                    parcelasTotais: parseInt(document.getElementById('car-parc-total').value),
+                    parcelasPagas: parseInt(document.getElementById('car-parc-pagas').value),
+                    valorQuitacaoAtual: parseFloat(document.getElementById('car-quitacao').value)
+                };
+                localStorage.setItem('carFinancingData', JSON.stringify(newData));
+                refreshCurrentView();
+            });
+        };
+
+        // ------------------ DÍZIMO ------------------
+        const renderDizimo = async (container, monthId) => {
+            const cats = await getAll('categories');
+            const dizimoCat = cats.find(c => c.name.includes('Dízimo')) || { id: 'cat-dizimo' };
+            const currTxs = (await getByMonth(monthId)).filter(t => t.categoryId === dizimoCat.id);
+            const totalMes = currTxs.reduce((acc, curr) => acc + curr.amount, 0);
+
+            container.innerHTML = `
+                <div class="section-title">Gestão de Dízimos e Ofertas</div>
+                <div class="split-layout">
+                    <div>
+                        <div class="panel" style="background:var(--accent-blue); color:white; margin-bottom:24px; border:none; text-align:center;">
+                            <span class="material-icons-round" style="font-size:48px; opacity:0.5; margin-bottom:12px;">volunteer_activism</span>
+                            <p style="opacity:0.9; font-size:1.1rem;">Consagrado no Mês</p>
+                            <h2 style="font-size:3rem; margin-top:8px;">${formatCurrency(totalMes)}</h2>
+                        </div>
+                        <div class="panel">
+                            <form id="frmDiz">
+                                <div class="form-group"><label>Valor (R$)</label><input type="number" step="0.01" id="dz-valor" required></div>
+                                <div class="form-group"><label>Data</label><input type="date" id="dz-data" required></div>
+                                <button class="btn-primary" type="submit" style="margin-top:16px;">Registrar Oferta/Dízimo</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3 style="margin-bottom: 16px;">Histórico do Mês</h3>
+                        ${currTxs.length ? currTxs.map(t => `<div class="list-item">
+                            <div><strong>${t.description}</strong><br><small>${t.date}</small></div>
+                            <div style="display:flex; align-items:center; gap:12px;"><strong>${formatCurrency(t.amount)}</strong>
+                            <button class="btn-primary" style="padding:8px; width:auto; background:transparent; border:1px solid var(--danger); color:var(--danger)" onclick="delTx('${t.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button></div>
+                        </div>`).join('') : '<p style="color:var(--text-secondary)">Nenhum registro.</p>'}
+                    </div>
+                </div>
+            `;
+            document.getElementById('frmDiz').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                await addRecord('transactions', { id: generateUUID(), monthId, type: 'expense', categoryId: dizimoCat.id, description: '🙏 Dízimo / Oferta', amount: parseFloat(document.getElementById('dz-valor').value), date: document.getElementById('dz-data').value, frequency: 'once', status: 'paid' });
+                refreshCurrentView();
+            });
+        };
+
+        // ------------------ CALENDÁRIO ------------------
+        const renderCalendario = async (container, monthId) => {
+            const txs = await getByMonth(monthId);
+            const cards = await getAll('cards');
+            let [y, m] = monthId.split('-');
+            let events = [];
+
+            txs.forEach(t => { if(!t.cardId && t.date) events.push({ date: t.date, title: t.description, amount: t.amount, type: t.type, isCard: false }); });
+            cards.forEach(c => {
+                let cardTxs = txs.filter(t => t.cardId === c.id);
+                let total = cardTxs.reduce((acc, curr) => acc + curr.amount, 0);
+                if(total > 0 && c.dueDay) {
+                    let dateStr = `${y}-${m}-${c.dueDay.toString().padStart(2, '0')}`;
+                    events.push({ date: dateStr, title: `Vencimento: ${c.name}`, amount: total, type: 'expense', isCard: true, color: c.color });
+                }
+            });
+
+            events.sort((a, b) => new Date(a.date) - new Date(b.date));
+            let grouped = {};
+            events.forEach(ev => { if(!grouped[ev.date]) grouped[ev.date] = []; grouped[ev.date].push(ev); });
+
+            container.innerHTML = `
+                <div class="section-title">Calendário de Vencimentos</div>
+                <div class="panel" style="max-width: 800px; margin: 0 auto;">
+                    ${Object.keys(grouped).length === 0 ? '<p style="text-align:center; color:var(--text-secondary)">Nenhum evento datado este mês.</p>' : ''}
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        ${Object.keys(grouped).map(date => {
+                            let [ey, em, ed] = date.split('-');
+                            return `
+                                <div style="font-weight:bold; color:var(--accent-blue-light); margin-top:16px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">Dia ${ed}/${em}</div>
+                                ${grouped[date].map(ev => `
+                                    <div class="list-item" style="border-left: 4px solid ${ev.type === 'income' ? 'var(--success)' : (ev.isCard ? 'var(--warning)' : 'var(--danger)')}">
+                                        <div style="display:flex; align-items:center; gap:12px;">
+                                            <span class="material-icons-round" style="color:var(--text-secondary)">${ev.type==='income'?'arrow_downward':(ev.isCard?'credit_card':'receipt_long')}</span>
+                                            <strong>${ev.title}</strong>
+                                        </div>
+                                        <strong style="color: ${ev.type === 'income' ? 'var(--success)' : 'var(--text-primary)'}">${formatCurrency(ev.amount)}</strong>
+                                    </div>
+                                `).join('')}
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        // ------------------ CONFIGURAÇÕES E EDIÇÃO DE CARTÕES E CATEGORIAS (ATUALIZADO) ------------------
+        const renderConfig = async (container, monthId) => {
+            const cats = await getAll('categories');
+            const cards = await getAll('cards');
+            
+            container.innerHTML = `
+                <div class="section-title">Configurações do Sistema</div>
+                <div class="split-layout">
+                    
+                    <div class="panel">
+                        <h3 style="margin-bottom:16px;">Cadastrar / Editar Cartão</h3>
+                        <form id="frmConfCard">
+                            <input type="hidden" id="cfg-c-id">
+                            <div class="form-group"><label>Nome do Cartão</label><input type="text" id="cfg-c-nome" required></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Cor (Hex/Gradient)</label><input type="text" id="cfg-c-cor" value="#3b82f6" required></div>
+                                <div class="form-group"><label>Dia de Vencimento</label><input type="number" id="cfg-c-venc" min="1" max="31" required></div>
+                            </div>
+                            <button class="btn-primary" type="submit" id="cfg-c-submit">Salvar Cartão</button>
+                        </form>
+
+                        <div style="max-height:250px; overflow-y:auto; margin-top:24px;">
+                            ${cards.map(c => `
+                                <div class="list-item" style="padding:12px; background:${c.color}; color:${c.textColor||'#fff'}">
+                                    <span>${c.name} (Vence dia ${c.dueDay || '--'})</span>
+                                    <div>
+                                        <button class="btn-primary" style="padding:6px; width:auto; background:rgba(0,0,0,0.3); border:none; margin-right:8px;" onclick="editViewCard('${c.id}')"><span class="material-icons-round" style="font-size:16px;">edit</span></button>
+                                        <button class="btn-primary" style="padding:6px; width:auto; background:rgba(0,0,0,0.3); border:none;" onclick="delCard('${c.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h3 style="margin-bottom:16px;">Categorias</h3>
+                        <form id="frmConfCat" style="margin-bottom:24px;">
+                            <input type="hidden" id="cfg-cat-id">
+                            <div class="form-row">
+                                <div class="form-group"><label>Nome c/ Emoji</label><input type="text" id="cfg-cat-nome" required></div>
+                                <div class="form-group"><label>Tipo</label><select id="cfg-cat-tipo"><option value="expense">Despesa</option><option value="income">Receita</option></select></div>
+                            </div>
+                            <div style="display:flex; gap:12px;">
+                                <button class="btn-primary" type="submit" id="cfg-cat-submit" style="background:var(--success); flex:1;">Cadastrar/Atualizar Categoria</button>
+                                <button class="btn-primary" type="button" id="cfg-cat-cancel" style="background:var(--text-secondary); flex:0.5;">Cancelar</button>
+                            </div>
+                        </form>
+
+                        <div style="max-height:250px; overflow-y:auto;">
+                            ${cats.map(c => `
+                                <div class="list-item" style="padding:12px;">
+                                    <span>${c.name} <span class="badge">${c.type === 'income' ? 'Receita' : 'Despesa'}</span></span>
+                                    ${c.isSystem ? '<span class="material-icons-round" style="font-size:18px; color:var(--text-secondary)">lock</span>' : 
+                                    `<div>
+                                        <button class="btn-primary" style="padding:6px; width:auto; background:transparent; border:1px solid var(--accent-blue); color:var(--accent-blue); margin-right:8px;" onclick="editViewCat('${c.id}')"><span class="material-icons-round" style="font-size:16px;">edit</span></button>
+                                        <button class="btn-primary" style="padding:6px; width:auto; background:transparent; border:1px solid var(--danger); color:var(--danger)" onclick="delCat('${c.id}')"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
+                                    </div>`}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            
+            document.getElementById('frmConfCard').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                const editId = document.getElementById('cfg-c-id').value;
+                const cNome = document.getElementById('cfg-c-nome').value;
+                await addRecord('cards', { id: editId || generateUUID(), name: cNome, color: document.getElementById('cfg-c-cor').value, brand: cNome.split(' ')[0], dueDay: parseInt(document.getElementById('cfg-c-venc').value) });
+                renderConfig(container, monthId);
+            });
+
+            // Form de Categoria (Novo/Edição)
+            document.getElementById('frmConfCat').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                const editId = document.getElementById('cfg-cat-id').value;
+                const nome = document.getElementById('cfg-cat-nome').value;
+                const tipo = document.getElementById('cfg-cat-tipo').value;
+                await addRecord('categories', { id: editId || generateUUID(), name: nome, type: tipo, isSystem: false });
+                document.getElementById('cfg-cat-id').value = '';
+                document.getElementById('cfg-cat-nome').value = '';
+                document.getElementById('cfg-cat-submit').innerText = 'Cadastrar/Atualizar Categoria';
+                renderConfig(container, monthId);
+            });
+
+            document.getElementById('cfg-cat-cancel').addEventListener('click', () => {
+                document.getElementById('cfg-cat-id').value = '';
+                document.getElementById('cfg-cat-nome').value = '';
+                document.getElementById('cfg-cat-submit').innerText = 'Cadastrar/Atualizar Categoria';
+            });
+            
+            window.delCat = async (id) => { 
+                const cat = await getRecord('categories', id);
+                if(cat && cat.isSystem) return alert('Categoria do sistema não pode ser excluída.');
+                if(confirm('Excluir Categoria?')) { await deleteRecord('categories', id); renderConfig(container, monthId); } 
+            };
+            window.delCard = async (id) => { if(confirm('Excluir Cartão?')) { await deleteRecord('cards', id); renderConfig(container, monthId); } };
+            
+            window.editViewCard = async (id) => {
+                const c = await getRecord('cards', id);
+                if(c) {
+                    document.getElementById('cfg-c-id').value = c.id;
+                    document.getElementById('cfg-c-nome').value = c.name;
+                    document.getElementById('cfg-c-cor').value = c.color;
+                    document.getElementById('cfg-c-venc').value = c.dueDay || '';
+                    document.getElementById('cfg-c-submit').innerText = "Atualizar Cartão";
+                }
+            };
+            
+            window.editViewCat = async (id) => {
+                const c = await getRecord('categories', id);
+                if(c && !c.isSystem) {
+                    document.getElementById('cfg-cat-id').value = c.id;
+                    document.getElementById('cfg-cat-nome').value = c.name;
+                    document.getElementById('cfg-cat-tipo').value = c.type;
+                    document.getElementById('cfg-cat-submit').innerText = "Atualizar Categoria";
+                } else if(c && c.isSystem) {
+                    alert('Categoria do sistema não pode ser editada.');
+                }
+            };
+        };
+
+        // ------------------ ROTEADOR E MOBILE MENU ------------------
+        let currentActiveView = 'dashboard';
+        let subState = null;
+
+        const navigateTo = async (viewName) => {
+            currentActiveView = viewName; subState = null;
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            const activeEl = document.querySelector(`[data-view="${viewName}"]`);
+            if(activeEl) activeEl.classList.add('active');
+            
+            // Fechar menu mobile ao clicar
+            document.getElementById('app-sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').style.display = 'none';
+
+            const vContainer = document.getElementById('view-container');
+            const mId = getCurrentMonthId();
+            
+            if(viewName === 'dashboard') await renderDashboard(vContainer, mId);
+            else if(viewName === 'receitas') await renderReceitas(vContainer, mId);
+            else if(viewName === 'cartoes') await renderCartoes(vContainer, mId);
+            else if(viewName === 'despesas') await renderDespesas(vContainer, mId);
+            else if(viewName === 'carro') await renderCarro(vContainer, mId);
+            else if(viewName === 'dizimo') await renderDizimo(vContainer, mId);
+            else if(viewName === 'calendario') await renderCalendario(vContainer, mId);
+            else if(viewName === 'config') await renderConfig(vContainer, mId);
+        };
+
+        window.delTx = async (id) => { if(confirm('Excluir lançamento?')) { await deleteRecord('transactions', id); refreshCurrentView(); } };
+        window.appRenderCard = async (id) => { subState = id; await renderCartoes(document.getElementById('view-container'), getCurrentMonthId(), id); };
+        const refreshCurrentView = () => { if (currentActiveView === 'cartoes' && subState) window.appRenderCard(subState); else navigateTo(currentActiveView); };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeSystemDefaults();
+            document.getElementById('currentMonthLabel').innerText = getMonthLabel(getCurrentMonthId());
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if(item.getAttribute('data-view')) item.addEventListener('click', () => navigateTo(item.getAttribute('data-view')));
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', async () => {
+                const nextId = await createNextMonth(getCurrentMonthId());
+                setCurrentMonthId(nextId); document.getElementById('currentMonthLabel').innerText = getMonthLabel(nextId); refreshCurrentView();
+            });
+
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                let [y, m] = getCurrentMonthId().split('-').map(Number);
+                m--; if(m<1){m=12;y--;}
+                const pId = `${y}-${m.toString().padStart(2,'0')}`;
+                setCurrentMonthId(pId); document.getElementById('currentMonthLabel').innerText = getMonthLabel(pId); refreshCurrentView();
+            });
+
+            // Lógica Menu Mobile
+            const btnMenu = document.getElementById('btn-menu-toggle');
+            const sidebar = document.getElementById('app-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            btnMenu.addEventListener('click', () => { sidebar.classList.add('open'); overlay.style.display = 'block'; });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.style.display = 'none'; });
+
+            navigateTo('dashboard');
+        });
+    </script>
+</body>
+</html>
